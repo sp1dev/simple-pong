@@ -2,9 +2,9 @@ import pygame, sys, random
 from pygame.locals import *
 pygame.init()
 
-# Colours
+# Colors
 BACKGROUND = (255, 255, 255)
-ELEMENTCOLOUR = (100, 100, 100)
+ELEMENTCOLOR = (100, 100, 100)
 
 # Game Setup
 FPS = 60
@@ -20,21 +20,21 @@ PADDLEINSET = 20
 PADDLEWIDTH = 10
 PADDLEHEIGHT = 60
 BALLSIZE = 10
-BALL_SPEED = 2  # Constant for ball speed
+BALL_SPEED = 2
 
 # The main function that controls the game
 def main():
-    looping = True
-
-    # Initial positions and momentum
+    # Initial position of paddles
     leftPaddleY = 50
     rightPaddleY = 50
+    # Initial position of ball
     ballX = WINDOW_WIDTH // 2
     ballY = WINDOW_HEIGHT // 2
     ballXMomentum = BALL_SPEED
     ballYMomentum = BALL_SPEED
 
     # The main game loop
+    looping = True
     while looping:
         # Get inputs
         for event in pygame.event.get():
@@ -42,7 +42,9 @@ def main():
                 pygame.quit()
                 sys.exit()
 
+        # get_pressed returns the keys on the keyboard
         pressed = pygame.key.get_pressed()
+        # Update the paddle positions based on keyboard input
         if pressed[K_w]:
             leftPaddleY -= 5
         elif pressed[K_s]:
@@ -99,12 +101,12 @@ def main():
         # Render elements of the game
         WINDOW.fill(BACKGROUND)
         # Draw line down the middle
-        pygame.draw.line(WINDOW, ELEMENTCOLOUR, (WINDOW_WIDTH // 2, 0), (WINDOW_WIDTH // 2, WINDOW_HEIGHT), 2)
+        pygame.draw.line(WINDOW, ELEMENTCOLOR, (WINDOW_WIDTH // 2, 0), (WINDOW_WIDTH // 2, WINDOW_HEIGHT), 2)
 
         # Draw paddles and ball
-        pygame.draw.rect(WINDOW, ELEMENTCOLOUR, leftPaddleRect)
-        pygame.draw.rect(WINDOW, ELEMENTCOLOUR, rightPaddleRect)
-        pygame.draw.circle(WINDOW, ELEMENTCOLOUR, (int(ballX), int(ballY)), BALLSIZE)
+        pygame.draw.rect(WINDOW, ELEMENTCOLOR, leftPaddleRect)
+        pygame.draw.rect(WINDOW, ELEMENTCOLOR, rightPaddleRect)
+        pygame.draw.circle(WINDOW, ELEMENTCOLOR, (int(ballX), int(ballY)), BALLSIZE)
 
         # Update the display
         pygame.display.update()
