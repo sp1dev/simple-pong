@@ -1,135 +1,104 @@
-import pygame
-
-# Initialize Pygame
+import pygame, sys, random
+from pygame.locals import *
 pygame.init()
 
-# Font that is used to render the text
-font20 = pygame.font.Font('freesansbold.ttf', 20)
+# Colors
+BACKGROUND = (255, 255, 255)
+ELEMENTCOLOR = (100, 100, 100)
 
-# RGB values of standard colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
+# Game Setup
+FPS = 60
+fpsClock = pygame.time.Clock()
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+pygame.display.set_caption('Pong')
 
-# Basic parameters of the screen
-WIDTH, HEIGHT = 900, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pong")
+# Game Element Variables
+PADDLEINSET = 20
+PADDLEWIDTH = 10
+PADDLEHEIGHT = 60
+BALLSIZE = 10
+BALL_SPEED = 3
 
-# Set up the clock for managing the frame rate
-clock = pygame.time.Clock()
-FPS = 30
+# Score Variables
+SCOREFONT = pygame.font.SysFont("Arial", 100)
+SCOREY = 25
+PLAYERSCOREX = 300
+BOTSCOREX = 465
 
-# Paddle parameters
-paddle_width, paddle_height = 10, 100
-paddle_speed = 10
+def init_game():
+    # Initial position of paddles and ball
+    leftPaddleY = 50
+    rightPaddleY = 50
+    ballX = WINDOW_WIDTH // 2
+    ballY = WINDOW_HEIGHT // 2
+    ballXMomentum = BALL_SPEED
+    ballYMomentum = BALL_SPEED
+    player1Score = 0
+    player2Score = 0
+    return leftPaddleY, rightPaddleY, ballX, ballY, ballXMomentum, ballYMomentum, player1Score, player2Score
 
-# Ball parameters
-ball_radius = 7
-ball_speed = 7
+def handle_input(leftPaddleY, rightPaddleY):
+    pressed = pygame.key.get_pressed()
+    if pressed[K_w]:
+        leftPaddleY -= 5
+    elif pressed[K_s]:
+        leftPaddleY += 5
+    if pressed[K_UP]:
+        rightPaddleY -= 5
+    elif pressed[K_DOWN]:
+        rightPaddleY += 5
+    return leftPaddleY, rightPaddleY
 
-# Initial positions of paddles and ball
-paddle1_pos = [20, HEIGHT // 2 - paddle_height // 2]
-paddle2_pos = [WIDTH - 30, HEIGHT // 2 - paddle_height // 2]
-ball_pos = [WIDTH // 2, HEIGHT // 2]
-ball_dir = [1, -1]
+def update_game(ballX, ballY, ballXMomentum, ballYMomentum, leftPaddleY, rightPaddleY, player1Score, player2Score):
+    # Check for paddle collisions with walls
+    leftPaddleY = max(min(leftPaddleY, WINDOW_HEIGHT - PADDLEHEIGHT), 0)
+    rightPaddleY = max(min(rightPaddleY, WINDOW_HEIGHT - PADDLEHEIGHT), 0)
 
-# Scores for both players
-score1, score2 = 0, 0
+    # Ball collision with walls and scoring
+    if ballY <= BALLSIZE or ballY >= WINDOW_HEIGHT - BALLSIZE:
+        ballYMomentum *= -1
+    if ballX <= BALLSIZE:
+        ballX, ballY = WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2
+        player2Score += 1
+    elif ballX >= WINDOW_WIDTH - BALLSIZE:
+        ballX, ballY = WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2
+        player1Score += 1
 
-# Function to draw a paddle
-def draw_paddle(pos, color):
-    pygame.draw.rect(screen, color, (*pos, paddle_width, paddle_height))
+    # Ball collision with paddles
+    if (ballX <= PADDLEINSET + PADDLEWIDTH and leftPaddleY < ballY < leftPaddleY + PADDLEHEIGHT) or \
+       (ballX >= WINDOW_WIDTH - PADDLEINSET - PADDLEWIDTH and rightPaddleY < ballY < rightPaddleY + PADDLEHEIGHT):
+        ballXMomentum *= -1
 
-# Function to draw the ball
-def draw_ball(pos, color):
-    pygame.draw.circle(screen, color, pos, ball_radius)
+    # Update ball position
+    ballX += ballXMomentum
+    ballY += ballYMomentum
+    return ballX, ballY, leftPaddleY, rightPaddleY, player1Score, player2Score
 
-# Function to display the scores in the middle of the screen
-def display_scores(score1, score2, color):
-    score_text = font20.render(f"{score1}   {score2}", True, color)
-    text_rect = score_text.get_rect(center=(WIDTH // 2, 20))
-    screen.blit(score_text, text_rect)
+def draw_game(ballX, ballY, leftPaddleY, rightPaddleY, player1Score, player2Score):
+    WINDOW.fill(BACKGROUND)
+    pygame.draw.line(WINDOW, ELEMENTCOLOR, (WINDOW_WIDTH // 2, 0), (WINDOW_WIDTH // 2, WINDOW_HEIGHT), 2)
+    pygame.draw.rect(WINDOW, ELEMENTCOLOR, pygame.Rect(PADDLEINSET, leftPaddleY, PADDLEWIDTH, PADDLEHEIGHT))
+    pygame.draw.rect(WINDOW, ELEMENTCOLOR, pygame.Rect(WINDOW_WIDTH - PADDLEINSET - PADDLEWIDTH, rightPaddleY, PADDLEWIDTH, PADDLEHEIGHT))
+    pygame.draw.circle(WINDOW, ELEMENTCOLOR, (int(ballX), int(ballY)), BALLSIZE)
+    player1ScoreText = SCOREFONT.render(str(player1Score), False, ELEMENTCOLOR)
+    player2ScoreText = SCOREFONT.render(str(player2Score), False, ELEMENTCOLOR)
+    WINDOW.blit(player1ScoreText, (PLAYERSCOREX, SCOREY))
+    WINDOW.blit(player2ScoreText, (BOTSCOREX, SCOREY))
+    pygame.display.update()
 
-# Main game function
 def main():
-    global paddle1_pos, paddle2_pos, ball_pos, ball_dir, score1, score2
-    running = True
-    paddle1_y_change, paddle2_y_change = 0, 0
-
-    while running:
-        # Fill the screen with black color
-        screen.fill(BLACK)
-
-        # Event handling
+    leftPaddleY, rightPaddleY, ballX, ballY, ballXMomentum, ballYMomentum, player1Score, player2Score = init_game()
+    while True:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    paddle2_y_change = -paddle_speed
-                if event.key == pygame.K_DOWN:
-                    paddle2_y_change = paddle_speed
-                if event.key == pygame.K_w:
-                    paddle1_y_change = -paddle_speed
-                if event.key == pygame.K_s:
-                    paddle1_y_change = paddle_speed
-            if event.type == pygame.KEYUP:
-                if event.key in (pygame.K_UP, pygame.K_DOWN):
-                    paddle2_y_change = 0
-                if event.key in (pygame.K_w, pygame.K_s):
-                    paddle1_y_change = 0
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+        leftPaddleY, rightPaddleY = handle_input(leftPaddleY, rightPaddleY)
+        ballX, ballY, leftPaddleY, rightPaddleY, player1Score, player2Score = update_game(ballX, ballY, ballXMomentum, ballYMomentum, leftPaddleY, rightPaddleY, player1Score, player2Score)
+        draw_game(ballX, ballY, leftPaddleY, rightPaddleY, player1Score, player2Score)
+        fpsClock.tick(FPS)
 
-        # Update paddle positions
-        paddle1_pos[1] += paddle1_y_change
-        paddle2_pos[1] += paddle2_y_change
-
-        # Ensure paddles stay within the screen bounds
-        paddle1_pos[1] = max(0, min(paddle1_pos[1], HEIGHT - paddle_height))
-        paddle2_pos[1] = max(0, min(paddle2_pos[1], HEIGHT - paddle_height))
-
-        # Update ball position
-        ball_pos[0] += ball_speed * ball_dir[0]
-        ball_pos[1] += ball_speed * ball_dir[1]
-
-        # Ball collision with top and bottom walls
-        if ball_pos[1] <= 0 or ball_pos[1] >= HEIGHT:
-            ball_dir[1] *= -1
-
-        # Ball collision with left and right walls (scoring)
-        if ball_pos[0] <= 0:
-            score2 += 1
-            ball_pos = [WIDTH // 2, HEIGHT // 2]
-            ball_dir[0] *= -1
-        elif ball_pos[0] >= WIDTH:
-            score1 += 1
-            ball_pos = [WIDTH // 2, HEIGHT // 2]
-            ball_dir[0] *= -1
-
-        # Create rectangles for collision detection
-        paddle1_rect = pygame.Rect(*paddle1_pos, paddle_width, paddle_height)
-        paddle2_rect = pygame.Rect(*paddle2_pos, paddle_width, paddle_height)
-        ball_rect = pygame.Rect(ball_pos[0] - ball_radius, ball_pos[1] - ball_radius, ball_radius * 2, ball_radius * 2)
-
-        # Ball collision with paddles
-        if ball_rect.colliderect(paddle1_rect) or ball_rect.colliderect(paddle2_rect):
-            ball_dir[0] *= -1
-
-        # Draw paddles and ball
-        draw_paddle(paddle1_pos, GREEN)
-        draw_paddle(paddle2_pos, GREEN)
-        draw_ball(ball_pos, WHITE)
-
-        # Display scores
-        display_scores(score1, score2, WHITE)
-
-        # Update the display
-        pygame.display.update()
-        clock.tick(FPS)
-
-    # Quit Pygame
-    pygame.quit()
-
-# Run the main game function
 if __name__ == "__main__":
     main()
