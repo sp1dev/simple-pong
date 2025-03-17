@@ -34,8 +34,8 @@ ballYMomentum = BALL_SPEED
 # Score Variables
 SCOREFONT = pygame.font.SysFont("Ariel", 100)
 SCOREY = 25
-PLAYERSCOREX = 300
-BOTSCOREX = 465
+PLAYER1SCOREX = 300
+PLAYER2SCOREX = 465
 player1Score = 0
 player2Score = 0
 
@@ -119,8 +119,8 @@ while looping:
     # Show Score
     player1ScoreText = SCOREFONT.render(str(player1Score), False, ELEMENTCOLOR)
     player2ScoreText = SCOREFONT.render(str(player2Score), False, ELEMENTCOLOR)
-    WINDOW.blit(player1ScoreText, (PLAYERSCOREX, SCOREY))
-    WINDOW.blit(player2ScoreText, (BOTSCOREX, SCOREY))
+    WINDOW.blit(player1ScoreText, (PLAYER1SCOREX, SCOREY))
+    WINDOW.blit(player2ScoreText, (PLAYER2SCOREX, SCOREY))
 
     # Update the display
     pygame.display.update()
