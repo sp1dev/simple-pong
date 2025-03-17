@@ -20,8 +20,7 @@ PADDLEINSET = 20
 PADDLEWIDTH = 10
 PADDLEHEIGHT = 60
 BALLSIZE = 10
-BALL_SPEED = 2
-
+BALL_SPEED = 3
 
 # Initial position of paddles
 leftPaddleY = 50
@@ -31,6 +30,14 @@ ballX = WINDOW_WIDTH // 2
 ballY = WINDOW_HEIGHT // 2
 ballXMomentum = BALL_SPEED
 ballYMomentum = BALL_SPEED
+
+# Score Variables
+SCOREFONT = pygame.font.SysFont("Ariel", 100)
+SCOREY = 25
+PLAYERSCOREX = 300
+BOTSCOREX = 465
+player1Score = 0
+player2Score = 0
 
 # The main game loop
 looping = True
@@ -75,11 +82,13 @@ while looping:
         ballY = WINDOW_HEIGHT // 2
         ballYMomentum = BALL_SPEED
         ballXMomentum = BALL_SPEED
+        player2Score += 1
     if ballX >= WINDOW_WIDTH - BALLSIZE:
         ballX = WINDOW_WIDTH // 2
         ballY = WINDOW_HEIGHT // 2
         ballYMomentum = BALL_SPEED
         ballXMomentum = -BALL_SPEED
+        player1Score += 1
 
     # Ball collision with paddles
     if ballX <= PADDLEINSET + PADDLEWIDTH and ballX > PADDLEINSET:
@@ -106,6 +115,12 @@ while looping:
     pygame.draw.rect(WINDOW, ELEMENTCOLOR, leftPaddleRect)
     pygame.draw.rect(WINDOW, ELEMENTCOLOR, rightPaddleRect)
     pygame.draw.circle(WINDOW, ELEMENTCOLOR, (int(ballX), int(ballY)), BALLSIZE)
+
+    # Show Score
+    player1ScoreText = SCOREFONT.render(str(player1Score), False, ELEMENTCOLOR)
+    player2ScoreText = SCOREFONT.render(str(player2Score), False, ELEMENTCOLOR)
+    WINDOW.blit(player1ScoreText, (PLAYERSCOREX, SCOREY))
+    WINDOW.blit(player2ScoreText, (BOTSCOREX, SCOREY))
 
     # Update the display
     pygame.display.update()
