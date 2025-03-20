@@ -42,7 +42,7 @@ player2Score = 0
 # The main game loop
 looping = True
 while looping:
-    # Get inputs
+    # Handle user clicking X to close window
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
